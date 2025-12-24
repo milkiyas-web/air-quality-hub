@@ -28,17 +28,17 @@ export function FanControl({ isOn, onToggle, className }: FanControlProps) {
           <div className="flex items-center gap-4">
             <div className={cn(
               "relative p-4 rounded-full transition-all duration-500",
-              isOn 
-                ? "bg-primary/10 shadow-[0_0_30px_hsl(173_80%_40%/0.3)]" 
+              isOn
+                ? "bg-primary/10 shadow-[0_0_30px_hsl(173_80%_40%/0.3)]"
                 : "bg-secondary"
             )}>
-              <Fan 
+              <Fan
                 className={cn(
                   "h-10 w-10 transition-all",
-                  isOn 
-                    ? "text-primary animate-spin-slow" 
+                  isOn
+                    ? "text-primary animate-spin-slow"
                     : "text-muted-foreground"
-                )} 
+                )}
               />
             </div>
             <div>
@@ -50,14 +50,14 @@ export function FanControl({ isOn, onToggle, className }: FanControlProps) {
               </p>
             </div>
           </div>
-          
+
           <Switch
             checked={isOn}
-            onCheckedChange={onToggle}
+            onCheckedChange={(value) => onToggle(value)}
             className="data-[state=checked]:bg-primary"
           />
         </div>
-        
+
         {isOn && (
           <div className="mt-4 pt-4 border-t border-border/50">
             <div className="flex items-center justify-between text-sm">

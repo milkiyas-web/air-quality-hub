@@ -6,7 +6,7 @@ import { AirQualityIndex } from "@/components/AirQualityIndex";
 import { FanControl } from "@/components/FanControl";
 import { StatusBar } from "@/components/StatusBar";
 
-const ESP_IP = "http://192.168.125.62"; // CHANGE if needed
+const ESP_IP = "http://10.198.208.62"; // CHANGE if needed
 
 type SensorData = {
     temperature: number;
@@ -15,6 +15,17 @@ type SensorData = {
     airQualityIndex: number;
     fan: boolean;
 };
+
+function parseSensorResponse(raw: string) {
+    // The device sometimes returns malformed JSON:
+    // - NaN values
+    // - missing comma between fan and dust (e.g., `"fan":true"dust":26`)
+    const sanitized = raw
+        .replace(/\bnan\b/gi, "null")
+        .replace(/("fan":\s*(?:true|false))"/i, '$1,"');
+
+    return JSON.parse(sanitized);
+}
 
 function getTemperatureStatus(temp: number) {
     if (temp >= 20 && temp <= 24) return { status: "good" as const, text: "Optimal" };
@@ -50,14 +61,15 @@ export default function Index() {
         const fetchData = async () => {
             try {
                 const res = await fetch(`${ESP_IP}/status`);
-                const json = await res.json();
+                const text = await res.text();
+                const json = parseSensorResponse(text);
 
                 setData({
-                    temperature: json.temperature,
-                    gas: json.gas,
-                    dust: json.dust,
-                    airQualityIndex: json.airQualityIndex ?? 0,
-                    fan: json.fan,
+                    temperature: Number(json.temperature) || 0,
+                    gas: Number(json.gas) || 0,
+                    dust: Number(json.dust) || 0,
+                    airQualityIndex: Number(json.airQualityIndex) || 0,
+                    fan: Boolean(json.fan),
                 });
 
                 setIsConnected(true);
@@ -74,15 +86,18 @@ export default function Index() {
         return () => clearInterval(interval);
     }, []);
 
-    const toggleFan = async () => {
-        const endpoint = data.fan ? "/fan/off" : "/fan/on";
+    const toggleFan = async (turnOn: boolean) => {
+        const endpoint = turnOn ? "/fan/on" : "/fan/off";
 
-        await fetch(`${ESP_IP}${endpoint}`, {
-            method: "POST",
-        });
-
-        setData(prev => ({ ...prev, fan: !prev.fan }));
+        try {
+            const res = await fetch(`${ESP_IP}${endpoint}`, { method: "POST" });
+            if (!res.ok) throw new Error(`Fan toggle failed: ${res.status}`);
+            setData(prev => ({ ...prev, fan: turnOn }));
+        } catch (err) {
+            console.error(err);
+        }
     };
+
 
     const tempStatus = getTemperatureStatus(data.temperature);
     const gasStatus = getGasStatus(data.gas);
@@ -150,6 +165,7 @@ export default function Index() {
                         <FanControl
                             isOn={data.fan}
                             onToggle={toggleFan}
+
                             className="h-full"
                         />
                     </div>
