@@ -6,7 +6,7 @@ import { AirQualityIndex } from "@/components/AirQualityIndex";
 import { FanControl } from "@/components/FanControl";
 import { StatusBar } from "@/components/StatusBar";
 
-const ESP_IP = "http://10.198.208.62"; // CHANGE if needed
+const ESP_IP = "http://192.168.125.20"; // CHANGE if needed
 
 type SensorData = {
     temperature: number;
@@ -91,6 +91,7 @@ export default function Index() {
 
         try {
             const res = await fetch(`${ESP_IP}${endpoint}`, { method: "POST" });
+            console.log(res)
             if (!res.ok) throw new Error(`Fan toggle failed: ${res.status}`);
             setData(prev => ({ ...prev, fan: turnOn }));
         } catch (err) {
@@ -121,7 +122,7 @@ export default function Index() {
                     {/* Air Quality Index - Featured */}
                     <div className="lg:row-span-2 animate-fade-in-delay-1">
                         <AirQualityIndex
-                            score={data.airQualityIndex}
+                            score={data.gas}
                             className="h-full"
                         />
                     </div>

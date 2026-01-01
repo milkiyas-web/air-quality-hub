@@ -7,16 +7,37 @@ interface AirQualityIndexProps {
   className?: string;
 }
 
-function getAQIStatus(score: number) {
-  if (score >= 80) return { label: "Excellent", color: "text-success", bgColor: "bg-success" };
-  if (score >= 60) return { label: "Good", color: "text-primary", bgColor: "bg-primary" };
-  if (score >= 40) return { label: "Moderate", color: "text-warning", bgColor: "bg-warning" };
-  if (score >= 20) return { label: "Poor", color: "text-destructive", bgColor: "bg-destructive" };
-  return { label: "Hazardous", color: "text-destructive", bgColor: "bg-destructive" };
+function getGasStatus(gas: number) {
+  if (gas >= 0 && gas <= 350)
+    return {
+      status: "good" as const,
+      label: "Good",
+      text: "Fresh air",
+      color: "text-green-500",
+      bgColor: "bg-green-500/20",
+    };
+
+  if (gas <= 1000)
+    return {
+      status: "moderate" as const,
+      label: "Moderate",
+      text: "Acceptable",
+      color: "text-yellow-500",
+      bgColor: "bg-yellow-500/20",
+    };
+
+  return {
+    status: "poor" as const,
+    label: "Poor",
+    text: "High pollution! Ventilate",
+    color: "text-red-500",
+    bgColor: "bg-red-500/20",
+  };
 }
 
+
 export function AirQualityIndex({ score, className }: AirQualityIndexProps) {
-  const status = getAQIStatus(score);
+  const status = getGasStatus(score);
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
@@ -26,13 +47,13 @@ export function AirQualityIndex({ score, className }: AirQualityIndexProps) {
         <div className="flex flex-col items-center">
           <div className="relative">
             {/* Background glow */}
-            <div 
+            <div
               className={cn(
                 "absolute inset-0 rounded-full blur-2xl opacity-20",
                 status.bgColor
-              )} 
+              )}
             />
-            
+
             {/* SVG Circle */}
             <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 100 100">
               {/* Background circle */}
@@ -61,7 +82,7 @@ export function AirQualityIndex({ score, className }: AirQualityIndexProps) {
                 }}
               />
             </svg>
-            
+
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <Wind className={cn("h-6 w-6 mb-1", status.color)} />
@@ -69,7 +90,7 @@ export function AirQualityIndex({ score, className }: AirQualityIndexProps) {
               <span className="text-xs text-muted-foreground">AQI</span>
             </div>
           </div>
-          
+
           <div className="mt-6 text-center">
             <h3 className={cn("text-2xl font-semibold", status.color)}>
               {status.label}
