@@ -6,7 +6,7 @@ import { AirQualityIndex } from "@/components/AirQualityIndex";
 import { FanControl } from "@/components/FanControl";
 import { StatusBar } from "@/components/StatusBar";
 
-const ESP_IP = "http://192.168.125.20"; // CHANGE if needed
+const ESP_IP = "http://10.176.130.20"; // CHANGE if needed
 
 type SensorData = {
     temperature: number;
